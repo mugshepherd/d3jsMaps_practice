@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title></title>
+  <link rel="stylesheet" href="">
+  <script src="/lib/d3.min.js"></script>
+  <script src="/lib/topojson.v1.min.js"></script>
+
+  <style>
+
+
+    .boundary {
+      fill: none;
+      stroke: #888;
+      stroke-linejoin: round;
+    }
+    svg {
+      border-style: solid;
+      border-width: 1px;
+      border-color: #ccc;
+    }
+    #tooltip {
+      position: absolute;
+      z-index: 2;
+      background: rgba(0,153,76,0.8);
+      width: 130px;
+      height:20px
+      color: white;
+      font-size: 14px;
+      padding: 5px;
+      top: -150px;
+      left: -150px;
+      font-family: "HelveticaNeue-Light", "Helvetica Neur Light", "Helvetica Neur", Helvetica, Arial, "Lucida Grande", sans-serif;
+      }
+    .overlay {
+      fill: none;
+      pointer-events: all;
+    }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="tooltip"></div>
+
+<script>
+
+(function(){
+
+  var height = 600;
+  var width = 900;
+  var projection = d3.geo.orthographic().clipAngle(90);
+  var path = d3.geo.path().projection(projection);
+
+  var i = 0;
+
+  var map = void 0;
+  var world = void 0;
+
+  var svg = d3.select("#map")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+  
+  d3.json('/data/world.json', function(data) {
+    var countries = topojson.feature(data, data.objects.countries);
+    var mexico = countries.features[102];
+
+    var map = svg.append('g').attr('class', 'boundary');
+    var world = map.selectAll('path').data(countries.features);
+    var mexico = map.selectAll('.mexico').data([mexico]);
+
+    var b, s, t;
+    projection.scale(1).translate([0, 0]);
+    var b = path.bounds(countries);
+    var s = .9 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height);
+    var t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+    projection.scale(s).translate(t);
+
+    map = svg.append('g').attr('class', 'boundary');
+    world = map.selectAll('path').data(countries.features);
+
+    world.enter()
+      .append('path')
+      .attr('d', path);
+
+    mexico.enter()
+      .append('path')
+      .attr('class', 'mexico')
+      .attr('d', path)
+      .style('fill', 'lightyellow').style('stroke', 'orange');
+
+    setInterval(function(){
+      i = i + 0.2;
+        //move i around in this array to play with yaw,pitch and roll.  
+      projection.rotate([0,0,i])
+      world.attr('d', path);
+      mexico.attr('d', path)
+        .style('fill', 'lightyellow').style('stroke', 'orange');
+    }, 20);
+      
+    world.attr('fill', '#ccc');
+
+
+  });
+
+})();
+</script> 
+  
+</body>
+</html>

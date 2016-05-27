@@ -40,7 +40,7 @@
 		.attr("height", height);
 
 
-	d3.json('ch4_geo-data.json', function(data) {
+	d3.json('/data/geo-data.json', function(data) {
 		var states = topojson.feature(data, data.objects.MEX_adm1);
 		console.log('mexico', data)
 
